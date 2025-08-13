@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registros de Saída</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Registros de Saída</h1>
+
+    <button onclick="window.location.href='/saida'">Fazer novo registro</button>
+
+    <table border="1" cellpadding="5" cellspacing="0" style="margin-top: 20px; width: 100%;">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuário</th>
+          <th>QR Code</th>
+          <th>Produto</th>
+          <th>Data Leitura</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in registros %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.usuario.nome }}</td>
+          <td>{{ s.qr_code_raw }}</td>
+          <td>{{ s.produto }}</td>
+          <td>{{ s.horario_leitura.strftime('%d/%m/%Y %H:%M:%S') if s.horario_leitura }}</td>
+          <td><a href="{{ url_for('resumo', id=s.id) }}">Ver resumo</a></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6">Nenhum registro encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
