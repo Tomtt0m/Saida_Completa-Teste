@@ -12,7 +12,8 @@
     <h1>Saída Completa</h1>
     <p>Olá, <strong>{{ usuario }}</strong></p>
 
-    <button id="start-scan">Registrar Palete Completo</button>
+    <!-- type="button" para não recarregar -->
+    <button type="button" id="start-scan">Registrar Palete Completo</button>
 
     <div id="qr-reader" class="qr-code-container" style="display: none; width: 300px;"></div>
 
@@ -20,22 +21,22 @@
       <input type="hidden" name="registro_id" id="registro_id">
 
       <label>QR Code:</label>
-      <input type="text" id="qr_code_raw" disabled>
+      <input type="text" id="qr_code_raw" readonly>
 
       <label>Produto:</label>
       <input type="text" id="produto" required>
 
       <label>Rota:</label>
-      <input type="text" id="rota" disabled>
+      <input type="text" id="rota" readonly>
 
       <label>Pré-nota:</label>
-      <input type="text" id="pre_nota" disabled>
+      <input type="text" id="pre_nota" readonly>
 
       <label>Região:</label>
-      <input type="text" id="regiao_nome" disabled>
+      <input type="text" id="regiao_nome" readonly>
 
       <label>Nº da Caixa:</label>
-      <input type="text" id="numero_caixa" disabled>
+      <input type="text" id="numero_caixa" readonly>
 
       <label>Quantidade de Volumes:</label>
       <input type="number" id="quantidade" required>
@@ -53,6 +54,7 @@
   </div>
 
   <script>
+  document.addEventListener("DOMContentLoaded", () => {
     const startScanBtn = document.getElementById("start-scan");
     const qrReader = document.getElementById("qr-reader");
     const formDados = document.getElementById("form-dados");
@@ -61,25 +63,25 @@
     const previewPalete = document.getElementById("preview_palete");
 
     let scanner;
-    let dadosQRCode = null; // Guarda dados lidos até confirmar
+    let dadosQRCode = null;
 
     // Função para extrair dados do QR Code
     function extrairDadosQRCode(codigo) {
-      const rota = codigo.substring(09, 13);          // posições 11 a 14 (índices 10 a 13)
-      const pre_nota = codigo.substring(14, 20);      // posições 15 a 20 (índices 14 a 19)
-      const codigo_regiao = codigo.substring(26, 28); // posições 25 a 26 (índices 24 a 25)
-      const numero_caixa = codigo.substring(36, 40);  // posições 39 a 42 (índices 38 a 41)
+      const rota = codigo.substring(9, 13);
+      const pre_nota = codigo.substring(14, 20);
+      const codigo_regiao = codigo.substring(26, 28);
+      const numero_caixa = codigo.substring(36, 40);
 
-  return {
-    qr_code_raw: codigo,
-    rota,
-    pre_nota,
-    codigo_regiao,
-    regiao_nome: "",
-    produto: "",
-    numero_caixa,
-  };
-}
+      return {
+        qr_code_raw: codigo,
+        rota,
+        pre_nota,
+        regiao_cod: codigo_regiao,
+        regiao_nome: "",
+        produto: "",
+        numero_caixa,
+      };
+    }
 
     // Preenche campos do formulário com os dados
     function preencherFormulario(dados) {
@@ -87,7 +89,7 @@
       document.getElementById("produto").value = dados.produto;
       document.getElementById("rota").value = dados.rota;
       document.getElementById("pre_nota").value = dados.pre_nota;
-      document.getElementById("regiao_nome").value = dados.codigo_regiao;
+      document.getElementById("regiao_nome").value = dados.regiao_cod;
       document.getElementById("numero_caixa").value = dados.numero_caixa;
     }
 
@@ -109,9 +111,8 @@
 
           formDados.style.display = "block";
         },
-        errorMessage => { /* ignora erros de leitura */ }
-      )
-      .catch(err => console.error("Erro ao iniciar scanner:", err));
+        errorMessage => { /* ignora erros */ }
+      ).catch(err => console.error("Erro ao iniciar scanner:", err));
     });
 
     // Clique no botão confirmar envia dados para o servidor
@@ -121,10 +122,11 @@
         return;
       }
 
-      // Adiciona quantidade ao objeto
+      dadosQRCode.produto = document.getElementById("produto").value;
       dadosQRCode.quantidade = document.getElementById("quantidade").value;
+      dadosQRCode.regiao_nome = document.getElementById("regiao_nome").value;
+      dadosQRCode.numero_caixa = document.getElementById("numero_caixa").value;
 
-      // Cria um objeto FormData para enviar inclusive as imagens
       const formData = new FormData();
       for (const key in dadosQRCode) {
         formData.append(key, dadosQRCode[key]);
@@ -138,12 +140,9 @@
       })
       .then(res => res.json())
       .then(data => {
-        if(data.status === "sucesso") {
+        if (data.status === "sucesso") {
           alert("Registro enviado com sucesso!");
-          formDados.reset();
-          formDados.style.display = "none";
-          // Redireciona para página de listagem
-          window.location.href = "/registros";
+          window.location.href = "/registros"; // Redireciona após sucesso
         } else {
           alert("Erro: " + data.mensagem);
         }
@@ -152,7 +151,7 @@
         console.error("Erro ao enviar:", err);
         alert("Erro ao enviar os dados!");
       });
-
+    });
 
     // Pré-visualização das fotos
     document.getElementById("foto_etiqueta").addEventListener("change", e => {
@@ -170,17 +169,7 @@
         previewPalete.style.display = "block";
       }
     });
+  });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
