@@ -19,7 +19,7 @@ class SaidaCompleta(db.Model):
     cliente = db.Column(db.String(100))
     produto = db.Column(db.String(100))
     numero_caixa = db.Column(db.String(10))
-    quantidade_volumes = db.Column(db.String(10))
+    quantidade_volumes = db.Column(db.Integer)
     foto_etiqueta = db.Column(db.String(200))
     foto_palete = db.Column(db.String(200))
     horario_leitura = db.Column(db.DateTime)
@@ -27,3 +27,4 @@ class SaidaCompleta(db.Model):
     horario_foto_2 = db.Column(db.DateTime)
 
     horario_confirmado = db.Column(db.DateTime)
+
